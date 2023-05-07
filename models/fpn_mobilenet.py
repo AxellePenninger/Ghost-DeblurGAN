@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from models.mobilenet_v2 import MobileNetV2
+from .mobilenet_v2 import MobileNetV2
 
 
 

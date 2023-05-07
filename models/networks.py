@@ -4,11 +4,11 @@ from torch.nn import init
 import functools
 from torch.autograd import Variable
 import numpy as np
-from models.fpn_mobilenet import FPNMobileNet
+from .fpn_mobilenet import FPNMobileNet
 
 #############################################
 
-from models.fpn_ghostnet import FPNGhostNet, HINet
+from .fpn_ghostnet import FPNGhostNet, HINet
 
 #############################################
 

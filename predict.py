@@ -8,14 +8,14 @@ import torch
 import yaml
 from fire import Fire
 from tqdm import tqdm
-
-from aug import get_normalize
-from models.networks import get_generator
+import random 
+from .aug import get_normalize
+from .models.networks import get_generator
 
 
 class Predictor:
     def __init__(self, weights_path: str, model_name: str = '', cuda: bool = True):
-        with open('config/config.yaml') as cfg:
+        with open('./modules/GhostDeblurGAN/config/config.yaml') as cfg:
             config = yaml.safe_load(cfg)
         model = get_generator(model_name or config['model'], cuda= cuda)
         model.load_state_dict(torch.load(weights_path)['model']) if weights_path is not None else None
@@ -91,7 +91,7 @@ def process_video(pairs, predictor, output_dir):
 
 def main(img_pattern: str,
          mask_pattern: Optional[str] = None,
-         weights_path='./Ghost-DeblurGAN/trained_weights/fpn_ghostnet_gm_hin.h5',
+         weights_path='./modules/GhostDeblurGAN/trained_weights/fpn_ghostnet_gm_hin.h5',
          out_dir='submit',
          side_by_side: bool = False,
          video: bool = True, cuda: bool= True):
@@ -120,13 +120,16 @@ def main(img_pattern: str,
     else:
         process_video(pairs, predictor, out_dir)
 
-def custom_main(img):
-    weights_path='./Ghost-DeblurGAN/trained_weights/fpn_ghostnet_gm_hin.h5'
-    cuda = True
+def init_predictor(weights_path='./modules/GhostDeblurGAN/trained_weights/fpn_ghostnet_gm_hin.h5', cuda: bool= True):
     predictor = Predictor(weights_path=weights_path, cuda= cuda)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    pred = predictor(img, None)
+    return predictor
+
+def custom_main(img,predictor):
+    img_pred = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pred = predictor(img_pred, None)
     pred = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
+    # result = np.hstack((img, pred))
+    # cv2.imwrite(f"./test{random.randint(0,100)}.jpg",result)
     return pred
 
 if __name__ == '__main__':
