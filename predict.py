@@ -16,7 +16,7 @@ from models.networks import get_generator
 class Predictor:
     def __init__(self, weights_path: str, model_name: str = '', cuda: bool = True):
         with open('config/config.yaml') as cfg:
-            config = yaml.load(cfg)
+            config = yaml.safe_load(cfg)
         model = get_generator(model_name or config['model'], cuda= cuda)
         model.load_state_dict(torch.load(weights_path)['model']) if weights_path is not None else None
         self.model = model.module.cpu() if not cuda else model.cuda()
@@ -91,10 +91,10 @@ def process_video(pairs, predictor, output_dir):
 
 def main(img_pattern: str,
          mask_pattern: Optional[str] = None,
-         weights_path='best_fpn.h5',
-         out_dir='submit/',
+         weights_path='./Ghost-DeblurGAN/trained_weights/fpn_ghostnet_gm_hin.h5',
+         out_dir='submit',
          side_by_side: bool = False,
-         video: bool = False, cuda: bool= True):
+         video: bool = True, cuda: bool= True):
     def sorted_glob(pattern):
         return sorted(glob(pattern))
 
@@ -120,6 +120,14 @@ def main(img_pattern: str,
     else:
         process_video(pairs, predictor, out_dir)
 
+def custom_main(img):
+    weights_path='./Ghost-DeblurGAN/trained_weights/fpn_ghostnet_gm_hin.h5'
+    cuda = True
+    predictor = Predictor(weights_path=weights_path, cuda= cuda)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pred = predictor(img, None)
+    pred = cv2.cvtColor(pred, cv2.COLOR_RGB2BGR)
+    return pred
 
 if __name__ == '__main__':
-    Fire(main)
+    Fire(custom_main)
